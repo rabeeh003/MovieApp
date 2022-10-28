@@ -6,18 +6,26 @@ import GenresCard from '../components/GenresCard';
 import ItemSeparator from '../components/itemComponent';
 import FONTS from '../constents/FONTS';
 import MovieCard from '../components/MovieCard';
-import { getNowPlayingMovies } from '../services/MovieService';
-
-const Genres = ["All","Action","Comady","Romance","Horrer","Sci-Fi"];
+import { getNowPlayingMovies, getUpcomingMovies, getAllGenres } from '../services/MovieService';
 
 const HomeScreen = () => {
 
   const [activeGenre, setActiveGenre] = useState("All")
   const [nowPlayingMovies, setNowPlayingMovies] = useState({});
+  const [upcomingMovies, setUpcomingMovies] = useState({});
+  const [genres, setGenres] = useState([{ id: 10110, name: "All" }]);
+
+
 
   useEffect(() => {
     getNowPlayingMovies().then(movieResponse => 
-    setNowPlayingMovies(movieResponse.data) 
+      setNowPlayingMovies(movieResponse.data) 
+    );
+    getUpcomingMovies().then(movieResponse => 
+      setUpcomingMovies(movieResponse.data) 
+    );
+    getAllGenres().then((genreResponse) =>
+      setGenres([...genres, ...genreResponse.data.genres])
     );
   }, []);
 
@@ -30,17 +38,17 @@ const HomeScreen = () => {
       </View>
       <View style={styles.genreListContainer}>
         <FlatList 
-          data={Genres}
+          data={genres}
           horizontal
           showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <ItemSeparator width={20}/>}
           ListHeaderComponent={() => <ItemSeparator width={20} />}
           ListFooterComponent={() => <ItemSeparator width={20} />}
           renderItem={({ item }) =>( 
             <GenresCard 
-              genreName={item} 
-              active={item === activeGenre ? true : false} 
+              genreName={item.name} 
+              active={item.name === activeGenre ? true : false} 
               onPress={ setActiveGenre}
             />
           )}
@@ -62,6 +70,31 @@ const HomeScreen = () => {
               voteAverage={item.vote_average}
               voteCount={item.vote_count}
               poster={item.poster_path}
+            />
+          )}
+        />
+      </View>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Coming Soon</Text>
+        <Text style={styles.headerSubTitle}>VIEW ALL</Text>
+      </View>
+      <View>
+      <FlatList 
+          data={upcomingMovies.results}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          ItemSeparatorComponent={() => <ItemSeparator width={20}/>}
+          ListHeaderComponent={() => <ItemSeparator width={20} />}
+          ListFooterComponent={() => <ItemSeparator width={20} />}
+          renderItem={({ item }) =>( 
+            <MovieCard
+              title={item.title}
+              language={item.original_language}
+              voteAverage={item.vote_average}
+              voteCount={item.vote_count}
+              poster={item.poster_path}
+              size={0.6}
             />
           )}
         />
